@@ -5,6 +5,7 @@ interface Buttonprop {
   fontSize?: number;
   height?: number;
   padding?: number;
+  onClick?: () => void;
 }
 
 const Button = ({
@@ -14,6 +15,7 @@ const Button = ({
   fontSize,
   height,
   theme,
+  onClick,
 }: Buttonprop) => {
   const isDark = theme === "dark";
 
@@ -23,6 +25,7 @@ const Button = ({
 
   return (
     <button
+      onClick={onClick}
       className="inline-flex items-center justify-center font-medium rounded-lg border transition-all duration-300 hover:-translate-y-0.5 cursor-pointer"
       style={{
         backgroundColor,

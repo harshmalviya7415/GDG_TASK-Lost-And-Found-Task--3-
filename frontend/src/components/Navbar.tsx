@@ -8,6 +8,8 @@ interface Navbarprop {
   fontSize?: number;
   height?: number;
   padding?: number;
+  onAddClick?: () => void;
+  onBrandClick?: () => void;
 }
 
 const Navbar = ({
@@ -18,6 +20,8 @@ const Navbar = ({
   fontSize,
   height,
   theme,
+  onAddClick,
+  onBrandClick,
 }: Navbarprop) => {
   const isDark = theme === "dark";
 
@@ -38,7 +42,10 @@ const Navbar = ({
       }}
     >
   
-      <div className="flex items-center gap-2 font-bold tracking-tight text-xl cursor-pointer hover:opacity-80 transition-opacity">
+      <div 
+        onClick={onBrandClick}
+        className="flex items-center gap-2 font-bold tracking-tight text-xl cursor-pointer hover:opacity-80 transition-opacity"
+      >
         <span>
           {brandName}
         </span>
@@ -67,8 +74,12 @@ const Navbar = ({
       </div>
 
   
-      <div className="flex items-center gap-4">
-        <Button name="Add Lost Item" theme={theme === "dark" ? "light" : "dark"} />
+      <div className="flex items-center gap-3">
+        <Button 
+          name="Add Lost Item" 
+          theme={theme === "dark" ? "light" : "dark"} 
+          onClick={onAddClick}
+        />
       </div>
     </nav>
   );
