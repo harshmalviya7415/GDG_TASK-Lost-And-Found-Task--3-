@@ -3,6 +3,7 @@ import Button from "./Button";
 
 export interface Item {
   id: string;
+  _id?: string;
   title: string;
   description: string;
   type: "Lost" | "Found";
@@ -10,9 +11,13 @@ export interface Item {
   date: string;
   contact: string;
   category?: string;
+  createdBy?: any;
+  currentStep?: string;
+  workflowStatus?: string;
+  claimantIds?: string[];
 }
 
-interface ItemCardprop {
+interface ItemCardProps {
   item: Item;
   theme?: string;
   textColor?: string;
@@ -20,6 +25,8 @@ interface ItemCardprop {
   padding?: number;
   onClaimClick?: () => void;
   onFoundClick?: () => void;
+  onCardClick?: () => void;
+  currentUser?: any;
 }
 
 const ItemCard = ({
@@ -30,20 +37,24 @@ const ItemCard = ({
   theme,
   onClaimClick,
   onFoundClick,
-}: ItemCardprop) => {
+  onCardClick,
+  currentUser,
+}: ItemCardProps) => {
   const isDark = theme === "dark";
 
   const backgroundColor = isDark ? "#1e293b" : "#ffffff";
   const finalTextColor = textColor || (isDark ? "#ffffff" : "#0f172a");
   const borderColor = isDark ? "#334155" : "#e2e8f0";
 
-  const isLost = item.type === "Lost";
+  const itemType = item.type || "Found";
+  const isLost = itemType.toLowerCase() === "lost";
   const badgeColor = isLost ? "#ef4444" : "#10b981";
   const badgeBg = isLost ? "rgba(239, 68, 68, 0.1)" : "rgba(16, 185, 129, 0.1)";
 
   return (
     <div
-      className="rounded-xl border flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:-translate-y-1 text-left"
+      onClick={onCardClick}
+      className="rounded-xl border flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:-translate-y-1 text-left cursor-pointer hover:border-blue-400"
       style={{
         backgroundColor,
         borderColor,
@@ -61,7 +72,7 @@ const ItemCard = ({
               color: badgeColor,
             }}
           >
-            {item.type}
+            {itemType}
           </span>
           {item.category && (
             <span className="flex items-center gap-1 text-xs opacity-60">
@@ -93,17 +104,45 @@ const ItemCard = ({
         </div>
       </div>
 
-      <div 
-        className="mt-auto pt-4 border-t border-dashed w-full" 
+      <div
+        className="mt-auto pt-4 border-t border-dashed w-full"
         style={{ borderColor: isDark ? "#334155" : "#e2e8f0" }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <Button
-          name={isLost ? "I Found This" : "Claim Item"}
-          theme={theme}
-          padding={8}
-          textColor={isDark ? "#ffffff" : "#0f172a"}
-          onClick={isLost ? onFoundClick : onClaimClick}
-        />
+        {(() => {
+          const currentUserId = currentUser?.id || currentUser?._id;
+          const hasUserClaimed = !!(item.claimantIds && currentUserId && item.claimantIds.includes(currentUserId.toString()));
+
+          const isFinalized = !!(item.currentStep && 
+            ["WAITING_FOR_HANDOVER", "WAITING_FOR_RECEIVER_CONFIRMATION", "COMPLETED"].includes(item.currentStep));
+          
+          const isCompleted = item.currentStep === "COMPLETED";
+          
+          let buttonName = isLost ? "I Found This" : "Claim Item";
+          let isDisabled = false;
+
+          if (isCompleted) {
+            buttonName = "Returned";
+            isDisabled = true;
+          } else if (isFinalized) {
+            buttonName = "Claim In Progress";
+            isDisabled = true;
+          } else if (hasUserClaimed) {
+            buttonName = "Claim In Progress";
+            isDisabled = true;
+          }
+
+          return (
+            <Button
+              name={buttonName}
+              theme={theme}
+              padding={8}
+              textColor={isDark ? "#ffffff" : "#0f172a"}
+              onClick={isLost ? onFoundClick : onClaimClick}
+              disabled={isDisabled}
+            />
+          );
+        })()}
       </div>
     </div>
   );

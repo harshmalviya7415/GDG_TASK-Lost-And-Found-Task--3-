@@ -22,9 +22,8 @@ const OutgoingClaimsView = ({ claims, items, onBack, theme }: OutgoingClaimsView
     <div className={`w-full max-w-3xl mx-auto px-4 py-6 ${bgClass}`}>
       <button
         onClick={onBack}
-        className={`mb-4 px-3 py-1.5 rounded text-xs font-semibold cursor-pointer ${
-          isDark ? "bg-slate-800 text-slate-200" : "bg-slate-200 text-slate-700"
-        }`}
+        className={`mb-4 px-3 py-1.5 rounded text-xs font-semibold cursor-pointer ${isDark ? "bg-slate-800 text-slate-200" : "bg-slate-200 text-slate-700"
+          }`}
       >
         ← Back to List
       </button>
@@ -61,20 +60,19 @@ const OutgoingClaimsView = ({ claims, items, onBack, theme }: OutgoingClaimsView
                   </div>
                   <div>
                     <span
-                      className={`px-2 py-0.5 rounded text-xs font-bold ${
-                        claim.status === "Pending"
+                      className={`px-2 py-0.5 rounded text-xs font-bold ${claim.status === "Pending"
                           ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
                           : claim.status === "Approved"
-                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-                          : "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400"
-                      }`}
+                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
+                            : "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400"
+                        }`}
                     >
                       {claim.status}
                     </span>
                   </div>
                 </div>
 
-             
+
                 <div className="text-xs space-y-1 mb-3">
                   <p><strong>Claim Date:</strong> {new Date(claim.dateSubmitted).toLocaleDateString()}</p>
                   <p><strong>Proof Sent:</strong> {claim.proofOfOwnership}</p>

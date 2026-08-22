@@ -41,9 +41,8 @@ const IncomingClaimsView = ({
     <div className={`w-full max-w-3xl mx-auto px-4 py-6 ${bgClass}`}>
       <button
         onClick={onBack}
-        className={`mb-4 px-3 py-1.5 rounded text-xs font-semibold cursor-pointer ${
-          isDark ? "bg-slate-800 text-slate-200" : "bg-slate-200 text-slate-700"
-        }`}
+        className={`mb-4 px-3 py-1.5 rounded text-xs font-semibold cursor-pointer ${isDark ? "bg-slate-800 text-slate-200" : "bg-slate-200 text-slate-700"
+          }`}
       >
         ← Back to List
       </button>
@@ -82,13 +81,12 @@ const IncomingClaimsView = ({
                   </div>
                   <div>
                     <span
-                      className={`px-2 py-0.5 rounded text-xs font-bold ${
-                        claim.status === "Pending"
+                      className={`px-2 py-0.5 rounded text-xs font-bold ${claim.status === "Pending"
                           ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
                           : claim.status === "Approved"
-                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-                          : "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400"
-                      }`}
+                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
+                            : "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400"
+                        }`}
                     >
                       {claim.status}
                     </span>
@@ -111,13 +109,13 @@ const IncomingClaimsView = ({
                   <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-slate-800/10 dark:border-slate-800">
                     <button
                       onClick={() => onDeclineClaim(claim.id)}
-                      className="px-3 py-1.5 text-xs font-semibold rounded border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      className="px-3 py-1.5 text-xs font-semibold rounded border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
                     >
                       Decline
                     </button>
                     <button
                       onClick={() => onApproveClaim(claim.id)}
-                      className="px-3 py-1.5 text-xs font-semibold rounded bg-emerald-600 hover:bg-emerald-700 text-white transition-colors cursor-pointer"
+                      className="px-3 py-1.5 text-xs font-semibold rounded bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer"
                     >
                       Approve
                     </button>

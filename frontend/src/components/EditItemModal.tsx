@@ -1,28 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Input from "./Input";
 import Button from "./Button";
 import { X } from "lucide-react";
 import type { Item } from "./ItemCard";
 
-interface AddItemModalProps {
+interface EditItemModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (item: Omit<Item, "id">) => void;
+  onEdit: (item: Item) => void;
+  item: Item;
   theme?: string;
   textColor?: string;
   fontSize?: number;
   padding?: number;
 }
 
-const AddItemModal = ({
+const EditItemModal = ({
   isOpen,
   onClose,
-  onAdd,
+  onEdit,
+  item,
   padding,
   textColor,
   fontSize,
   theme,
-}: AddItemModalProps) => {
+}: EditItemModalProps) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState<"Lost" | "Found">("Lost");
@@ -30,6 +32,18 @@ const AddItemModal = ({
   const [date, setDate] = useState("");
   const [contact, setContact] = useState("");
   const [category, setCategory] = useState("");
+
+  useEffect(() => {
+    if (item && isOpen) {
+      setTitle(item.title || "");
+      setDescription(item.description || "");
+      setType(item.type || "Lost");
+      setLocation(item.location || "");
+      setDate(item.date || "");
+      setContact(item.contact || "");
+      setCategory(item.category || "");
+    }
+  }, [item, isOpen]);
 
   if (!isOpen) return null;
 
@@ -42,7 +56,8 @@ const AddItemModal = ({
     e.preventDefault();
     if (!title || !description || !location || !date || !contact) return;
 
-    onAdd({
+    onEdit({
+      ...item,
       title,
       description,
       type,
@@ -52,13 +67,6 @@ const AddItemModal = ({
       category: category || "General",
     });
 
-    setTitle("");
-    setDescription("");
-    setType("Lost");
-    setLocation("");
-    setDate("");
-    setContact("");
-    setCategory("");
     onClose();
   };
 
@@ -75,7 +83,7 @@ const AddItemModal = ({
         }}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold tracking-tight">Report Lost / Found Item</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Edit Reported Item</h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg hover:opacity-80 transition-all cursor-pointer"
@@ -193,7 +201,7 @@ const AddItemModal = ({
               Cancel
             </button>
             <Button
-              name="Submit Report"
+              name="Save Changes"
               theme={theme}
               textColor={isDark ? "#ffffff" : "#0f172a"}
             />
@@ -204,4 +212,4 @@ const AddItemModal = ({
   );
 };
 
-export default AddItemModal;
+export default EditItemModal;

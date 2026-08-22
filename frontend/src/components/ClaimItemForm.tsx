@@ -59,7 +59,7 @@ const ClaimItemForm = ({ item, onBack, onSubmitClaim, theme }: ClaimItemFormProp
 
           <button
             onClick={onBack}
-            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer"
+            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-all cursor-pointer"
           >
             Back to Home
           </button>
@@ -90,10 +90,6 @@ const ClaimItemForm = ({ item, onBack, onSubmitClaim, theme }: ClaimItemFormProp
             <p><strong>Found Date:</strong> {item.date}</p>
             {item.category && <p><strong>Category:</strong> {item.category}</p>}
             <p><strong>Contact:</strong> {item.contact}</p>
-          </div>
-
-          <div className={`mt-4 p-3 rounded-lg border text-[11px] ${isDark ? "bg-slate-950" : "bg-slate-100"}`}>
-            <strong>Note:</strong> Explain details like stickers, scratches, or unique settings to prove you are the owner.
           </div>
         </div>
 

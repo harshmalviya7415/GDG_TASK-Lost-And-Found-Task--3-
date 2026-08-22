@@ -1,154 +1,120 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import Navbar from "./components/Navbar";
 import ItemCard from "./components/ItemCard";
 import type { Item } from "./components/ItemCard";
 import AddItemModal from "./components/AddItemModal";
+import EditItemModal from "./components/EditItemModal";
 import ClaimItemForm from "./components/ClaimItemForm";
 import ReportFoundForm from "./components/ReportFoundForm";
-import IncomingClaimsView from "./components/IncomingClaimsView";
-import type { Claim } from "./components/IncomingClaimsView";
-import OutgoingClaimsView from "./components/OutgoingClaimsView";
+import WorkflowTimeline from "./components/WorkflowTimeline";
+import AuthScreen from "./components/AuthScreen";
 import { Search, Info, Plus } from "lucide-react";
+
+axios.defaults.withCredentials = true;
+
+const API = axios.create({
+  baseURL: "http://localhost:1500/api",
+});
 
 type ViewState =
   | { type: "list" }
   | { type: "claim"; item: Item }
   | { type: "found"; item: Item }
-  | { type: "incoming-claims" }
-  | { type: "outgoing-claims" };
-
-const initialItems: Item[] = [
-  {
-    id: "1",
-    title: "iPhone 15 Pro",
-    description: "Titanium blue iPhone 15 Pro found near the cafeteria. It has a transparent case with a sticker on the back.",
-    type: "Found",
-    location: "Student Cafeteria",
-    date: "2026-08-20",
-    contact: "cafeteria-staff@foundly.com",
-    category: "Electronics",
-  },
-  {
-    id: "2",
-    title: "Black Leather Wallet",
-    description: "Lost my leather wallet containing college ID and some cash. Probably dropped it between the Library and Science block.",
-    type: "Lost",
-    location: "Library pathway",
-    date: "2026-08-19",
-    contact: "john.doe@university.edu",
-    category: "Accessories",
-  },
-  {
-    id: "3",
-    title: "Mechanical Car Keys",
-    description: "Toyota car key fob found on the bench in the central lawn. Has a red leather keychain attached.",
-    type: "Found",
-    location: "Central Lawn",
-    date: "2026-08-20",
-    contact: "lawn-security@foundly.com",
-    category: "Keys",
-  },
-  {
-    id: "4",
-    title: "Blue Nike Backpack",
-    description: "Lost a blue Nike backpack containing a laptop charger, notebooks, and a blue water bottle.",
-    type: "Lost",
-    location: "Block C, Room 204",
-    date: "2026-08-18",
-    contact: "sarah.smith@student.edu",
-    category: "Bags",
-  },
-  {
-    id: "5",
-    title: "Sony WH-1000XM4 Headphones",
-    description: "Found grey Sony noise-canceling headphones left on a desk in the computer science lab.",
-    type: "Found",
-    location: "CS Lab 3",
-    date: "2026-08-21",
-    contact: "lab-assistant@foundly.com",
-    category: "Electronics",
-  },
-];
+  | { type: "detail"; item: Item };
 
 function App() {
   const theme = "light";
-  const [items, setItems] = useState<Item[]>(() => {
-    const saved = localStorage.getItem("foundly_items");
-    return saved ? JSON.parse(saved) : initialItems;
-  });
+  const [items, setItems] = useState<Item[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"All" | "Lost" | "Found">("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [view, setView] = useState<ViewState>({ type: "list" });
+  
+  const [selectedWorkflow, setSelectedWorkflow] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [authLoading, setAuthLoading] = useState(true);
 
-  const [claims, setClaims] = useState<Claim[]>(() => {
-    const saved = localStorage.getItem("foundly_claims");
-    if (saved) return JSON.parse(saved);
-    
-    const mockClaims: Claim[] = [
-      {
-        id: "mock-claim-1",
-        itemId: "1",
-        claimantName: "Alex Mercer",
-        contactInfo: "alex.mercer@gmail.com",
-        proofOfOwnership: "It has a customized lockscreen with a photo of a husky dog. Also, the charging port has a tiny scratch on the left side.",
-        lossDate: "2026-08-20",
-        status: "Pending",
-        dateSubmitted: new Date(Date.now() - 3600000).toISOString(),
-      },
-      {
-        id: "mock-claim-2",
-        itemId: "2",
-        claimantName: "You (Finder)",
-        contactInfo: "john.doe@university.edu",
-        proofOfOwnership: "Found it near the library pathway. Handed it to the librarian at the front desk.",
-        lossDate: "2026-08-19",
-        status: "Approved",
-        dateSubmitted: new Date(Date.now() - 7200000).toISOString(),
-      }
-    ];
-    localStorage.setItem("foundly_claims", JSON.stringify(mockClaims));
-    return mockClaims;
-  });
+  const checkAuth = async () => {
+    try {
+      const res = await API.get("/auth/me");
+      setCurrentUser(res.data);
+    } catch (err) {
+      console.error(err);
+      setCurrentUser(null);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
-  const [myReportedItemIds, setMyReportedItemIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem("my_reported_item_ids");
-    if (saved) return JSON.parse(saved);
-    
-    const defaultIds = ["1"];
-    localStorage.setItem("my_reported_item_ids", JSON.stringify(defaultIds));
-    return defaultIds;
-  });
+  const fetchItems = async () => {
+    try {
+      const res = await API.get("/items");
+      setItems(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  const [myClaimIds, setMyClaimIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem("my_claim_ids");
-    if (saved) return JSON.parse(saved);
-    
-    const defaultIds = ["mock-claim-2"];
-    localStorage.setItem("my_claim_ids", JSON.stringify(defaultIds));
-    return defaultIds;
-  });
+  const fetchNotifications = async () => {
+    try {
+      const res = await API.get("/notifications");
+      setNotifications(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
-    localStorage.setItem("foundly_items", JSON.stringify(items));
-  }, [items]);
+    checkAuth();
+    fetchItems();
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem("foundly_claims", JSON.stringify(claims));
-  }, [claims]);
+    if (currentUser) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
-    localStorage.setItem("my_reported_item_ids", JSON.stringify(myReportedItemIds));
-  }, [myReportedItemIds]);
-
-  useEffect(() => {
-    localStorage.setItem("my_claim_ids", JSON.stringify(myClaimIds));
-  }, [myClaimIds]);
-
-  useEffect(() => {
-    const handleHashChange = () => {
+    const handleHashChange = async () => {
       const hash = window.location.hash;
-      if (hash === "#about") {
+      if (hash.startsWith("#/item/")) {
+        const parts = hash.replace("#/item/", "").split("/");
+        const itemId = parts[0];
+        const subAction = parts[1];
+
+        try {
+          const itemRes = await API.get(`/items/${itemId}`);
+          const workflowRes = await API.get(`/workflows/${itemId}`);
+          setSelectedWorkflow(workflowRes.data);
+
+          if (subAction === "claim" || subAction === "found") {
+            const currentUserId = currentUser?.id || currentUser?._id;
+            const claimantIds = workflowRes.data?.claims?.map((c: any) => (c.claimantId?._id || c.claimantId)?.toString()) || [];
+            const hasUserClaimed = currentUserId && claimantIds.includes(currentUserId.toString());
+            
+            const isFinalized = workflowRes.data && 
+              ["WAITING_FOR_HANDOVER", "WAITING_FOR_RECEIVER_CONFIRMATION", "COMPLETED"].includes(workflowRes.data.currentStep);
+
+            if (isFinalized || hasUserClaimed) {
+              window.location.hash = `#/item/${itemId}`;
+              setView({ type: "detail", item: itemRes.data });
+            } else {
+              setView({ type: subAction === "claim" ? "claim" : "found", item: itemRes.data });
+            }
+          } else {
+            setView({ type: "detail", item: itemRes.data });
+          }
+        } catch (err) {
+          console.error(err);
+          window.location.hash = "";
+        }
+      } else if (hash === "#about") {
         setFilter("Lost");
         setView({ type: "list" });
       } else if (hash === "#features") {
@@ -156,6 +122,7 @@ function App() {
         setView({ type: "list" });
       } else {
         setFilter("All");
+        setView({ type: "list" });
       }
     };
 
@@ -165,34 +132,85 @@ function App() {
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
-  const handleAddItem = (newItem: Omit<Item, "id">) => {
-    const itemWithId: Item = {
-      ...newItem,
-      id: crypto.randomUUID(),
-    };
-    setItems((prev) => [itemWithId, ...prev]);
-    setMyReportedItemIds((prev) => [...prev, itemWithId.id]);
+  const handleCardClick = (item: Item) => {
+    const itemId = item._id || item.id || "";
+    window.location.hash = `#/item/${itemId}`;
   };
 
-  const handleClaimSubmit = (claimDetails: {
+  const handleAddItem = async (newItem: Omit<Item, "id">) => {
+    try {
+      const res = await API.post("/items", newItem);
+      setIsModalOpen(false);
+      await fetchItems();
+      const createdItemId = res.data.item._id || res.data.item.id;
+      window.location.hash = `#/item/${createdItemId}`;
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleEditItem = async (updatedItem: Item) => {
+    try {
+      const id = updatedItem._id || updatedItem.id;
+      const res = await API.post("/items/edit", {
+        id,
+        title: updatedItem.title,
+        type: updatedItem.type,
+        category: updatedItem.category,
+        description: updatedItem.description,
+        location: updatedItem.location,
+        date: updatedItem.date,
+        contact: updatedItem.contact,
+      });
+      setIsEditModalOpen(false);
+      await fetchItems();
+      
+      if (view.type === "detail" && (view.item._id === id || view.item.id === id)) {
+        setView({ type: "detail", item: { ...view.item, ...updatedItem } });
+      }
+      
+      console.log(res.data.mess);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteItem = async (itemId: string) => {
+    try {
+      const res = await API.post("/items/delete", { id: itemId });
+      console.log(res.data.mess);
+      await fetchItems();
+      window.location.hash = "";
+      setView({ type: "list" });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleClaimSubmit = async (claimDetails: {
     claimantName: string;
     contactInfo: string;
     proofOfOwnership: string;
     lossDate: string;
     itemId: string;
   }) => {
-    console.log("Ownership claim details logged:", claimDetails);
-    const newClaim: Claim = {
-      id: crypto.randomUUID(),
-      dateSubmitted: new Date().toISOString(),
-      status: "Pending",
-      ...claimDetails
-    };
-    setClaims((prev) => [newClaim, ...prev]);
-    setMyClaimIds((prev) => [...prev, newClaim.id]);
+    try {
+      const itemId = claimDetails.itemId;
+      const res = await API.post(`/workflows/${itemId}/claim`, {
+        claimantName: claimDetails.claimantName,
+        contactInfo: claimDetails.contactInfo,
+        reason: claimDetails.proofOfOwnership,
+        privateVerification: claimDetails.proofOfOwnership,
+      });
+      setSelectedWorkflow(res.data);
+      await fetchItems();
+      window.location.hash = `#/item/${itemId}`;
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleFoundReportSubmit = (reportDetails: {
+  const handleFoundReportSubmit = async (reportDetails: {
     finderName: string;
     contactInfo: string;
     foundLocation: string;
@@ -200,35 +218,101 @@ function App() {
     additionalNotes: string;
     itemId: string;
   }) => {
-    console.log("Found report details logged:", reportDetails);
-    const newClaim: Claim = {
-      id: crypto.randomUUID(),
-      itemId: reportDetails.itemId,
-      claimantName: reportDetails.finderName,
-      contactInfo: reportDetails.contactInfo,
-      proofOfOwnership: `Found at: ${reportDetails.foundLocation}\nNotes: ${reportDetails.additionalNotes}`,
-      lossDate: reportDetails.foundDate,
-      status: "Pending",
-      dateSubmitted: new Date().toISOString(),
-    };
-    setClaims((prev) => [newClaim, ...prev]);
-    setMyClaimIds((prev) => [...prev, newClaim.id]);
+    try {
+      const itemId = reportDetails.itemId;
+      const res = await API.post(`/workflows/${itemId}/claim`, {
+        claimantName: reportDetails.finderName,
+        contactInfo: reportDetails.contactInfo,
+        reason: `Found at ${reportDetails.foundLocation}`,
+        privateVerification: reportDetails.additionalNotes,
+      });
+      setSelectedWorkflow(res.data);
+      await fetchItems();
+      window.location.hash = `#/item/${itemId}`;
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleApproveClaim = (claimId: string) => {
-    setClaims((prev) =>
-      prev.map((c) => (c.id === claimId ? { ...c, status: "Approved" } : c))
-    );
+  const handleApprove = async (itemId: string, claimantId: string) => {
+    try {
+      const res = await API.post(`/workflows/${itemId}/approve`, { claimantId });
+      setSelectedWorkflow(res.data);
+      await fetchItems();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleDeclineClaim = (claimId: string) => {
-    setClaims((prev) =>
-      prev.map((c) => (c.id === claimId ? { ...c, status: "Declined" } : c))
-    );
+  const handleHandover = async (itemId: string) => {
+    try {
+      const res = await API.post(`/workflows/${itemId}/handover`);
+      setSelectedWorkflow(res.data);
+      await fetchItems();
+    } catch (err) {
+      console.error(err);
+    }
   };
+
+  const handleConfirm = async (itemId: string) => {
+    try {
+      const res = await API.post(`/workflows/${itemId}/confirm`);
+      setSelectedWorkflow(res.data);
+      await fetchItems();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMarkRead = async (id: string) => {
+    try {
+      await API.put(`/notifications/${id}/read`);
+      fetchNotifications();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await API.put("/notifications/mark-all-read");
+      fetchNotifications();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await API.post("/auth/logout");
+    } catch (err) {
+      console.error(err);
+    }
+    setCurrentUser(null);
+    setNotifications([]);
+    window.location.hash = "";
+  };
+
+  const handleAuthSuccess = (_token: string, user: any) => {
+    setCurrentUser(user);
+    fetchItems();
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-900">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return <AuthScreen onAuthSuccess={handleAuthSuccess} />;
+  }
 
   const filteredItems = items.filter((item) => {
-    const matchesFilter = filter === "All" || item.type === filter;
+    const itemType = item.type || "Found";
+    const matchesFilter = filter === "All" || itemType.toLowerCase() === filter.toLowerCase();
     const matchesSearch =
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -237,46 +321,60 @@ function App() {
     return matchesFilter && matchesSearch;
   });
 
-  const incomingClaims = claims.filter((claim) =>
-    myReportedItemIds.includes(claim.itemId)
-  );
-
-  const outgoingClaims = claims.filter((claim) =>
-    myClaimIds.includes(claim.id)
-  );
-
-  const pendingIncomingCount = incomingClaims.filter(
-    (c) => c.status === "Pending"
-  ).length;
+  const isDark = false;
+  const bgClass = "bg-slate-50 text-slate-900";
+  const heroTextColor = "text-slate-600";
 
   const navLinks = [
     { label: "Lost", href: "#about" },
     { label: "Found", href: "#features" },
   ];
 
-  const isDark = false;
-  const bgClass = "bg-slate-50 text-slate-900";
-  const heroTextColor = "text-slate-600";
+  const creatorId = view.type === "detail" ? (view.item.createdBy?._id || view.item.createdBy) : null;
+  const currentUserId = currentUser?.id || currentUser?._id;
+  const isCreator = view.type === "detail" && creatorId === currentUserId;
+
+  const isFinder = selectedWorkflow && (
+    (view.type === "detail" && view.item.type === "Found" && creatorId === currentUserId) ||
+    ((selectedWorkflow.claimantId?._id || selectedWorkflow.claimantId) === currentUserId && view.type === "detail" && view.item.type === "Lost")
+  );
+
+  const isClaimant = selectedWorkflow && (
+    (view.type === "detail" && view.item.type === "Lost" && creatorId === currentUserId) ||
+    ((selectedWorkflow.claimantId?._id || selectedWorkflow.claimantId) === currentUserId && view.type === "detail" && view.item.type === "Found")
+  );
+
+  const userClaim = selectedWorkflow?.claims?.find((c: any) => (c.claimantId?._id || c.claimantId)?.toString() === currentUserId?.toString());
+  const hasPendingClaim = !!(userClaim && userClaim.status === "PENDING");
 
   return (
-    <div className={`min-h-screen ${bgClass} transition-colors duration-300 flex flex-col font-sans`}>
+    <div className={`min-h-screen ${bgClass} transition-all duration-300 flex flex-col font-sans`}>
       <Navbar 
         brandName="Foundly" 
         links={navLinks} 
         theme={theme} 
+        currentUser={currentUser}
+        notifications={notifications}
+        onMarkRead={handleMarkRead}
+        onMarkAllRead={handleMarkAllRead}
+        onLogout={handleLogout}
         onAddClick={() => {
           setView({ type: "list" });
           setIsModalOpen(true);
         }}
-        onBrandClick={() => setView({ type: "list" })}
+        onBrandClick={() => {
+          window.location.hash = "";
+        }}
       />
 
       {view.type === "claim" ? (
         <div className="flex-1">
           <ClaimItemForm
             item={view.item}
-            onBack={() => setView({ type: "list" })}
-            onSubmitClaim={(claimDetails) => handleClaimSubmit({ ...claimDetails, itemId: view.item.id })}
+            onBack={() => {
+              window.location.hash = `#/item/${view.item._id || view.item.id}`;
+            }}
+            onSubmitClaim={(claimDetails) => handleClaimSubmit({ ...claimDetails, itemId: view.item._id || view.item.id || "" })}
             theme={theme}
           />
         </div>
@@ -284,30 +382,192 @@ function App() {
         <div className="flex-1">
           <ReportFoundForm
             item={view.item}
-            onBack={() => setView({ type: "list" })}
-            onSubmitReport={(reportDetails) => handleFoundReportSubmit({ ...reportDetails, itemId: view.item.id })}
+            onBack={() => {
+              window.location.hash = `#/item/${view.item._id || view.item.id}`;
+            }}
+            onSubmitReport={(reportDetails) => handleFoundReportSubmit({ ...reportDetails, itemId: view.item._id || view.item.id || "" })}
             theme={theme}
           />
         </div>
-      ) : view.type === "incoming-claims" ? (
-        <div className="flex-1">
-          <IncomingClaimsView
-            claims={incomingClaims}
-            items={items}
-            onBack={() => setView({ type: "list" })}
-            onApproveClaim={handleApproveClaim}
-            onDeclineClaim={handleDeclineClaim}
-            theme={theme}
-          />
-        </div>
-      ) : view.type === "outgoing-claims" ? (
-        <div className="flex-1">
-          <OutgoingClaimsView
-            claims={outgoingClaims}
-            items={items}
-            onBack={() => setView({ type: "list" })}
-            theme={theme}
-          />
+      ) : view.type === "detail" ? (
+        <div className="w-full max-w-4xl mx-auto px-4 py-6 text-left">
+          <button
+            onClick={() => {
+              window.location.hash = "";
+            }}
+            className="mb-6 px-3 py-1.5 rounded text-xs font-semibold bg-slate-200 text-slate-700 hover:bg-slate-300 transition-all cursor-pointer"
+          >
+            ← Back to List
+          </button>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div className="md:col-span-8 space-y-6">
+              <div className="bg-white p-6 rounded-xl border border-slate-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 capitalize border border-blue-100">
+                    {view.item.type || "Found"}
+                  </span>
+                  <span className="text-xs text-slate-500">{view.item.category}</span>
+                </div>
+                <h2 className="text-3xl font-bold mb-4">{view.item.title}</h2>
+                <p className="text-slate-600 text-sm mb-6 whitespace-pre-wrap">{view.item.description}</p>
+                
+                <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-lg">
+                  <p><strong>Location:</strong> {view.item.location}</p>
+                  <p><strong>Date:</strong> {view.item.date}</p>
+                  <p><strong>Contact:</strong> {view.item.contact}</p>
+                  <p><strong>Reported By:</strong> {view.item.createdBy?.username || "Legacy User"}</p>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl border border-slate-200">
+                <h3 className="font-bold text-base mb-4">Actions</h3>
+
+                {isCreator && (
+                  <div className="flex gap-3 mb-4 pb-4 border-b border-dashed border-slate-200">
+                    <button
+                      onClick={() => setIsEditModalOpen(true)}
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded transition-all cursor-pointer text-xs"
+                    >
+                      Edit Details
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm("Are you sure you want to delete this reported item?")) {
+                          handleDeleteItem(view.item._id || view.item.id || "");
+                        }
+                      }}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded transition-all cursor-pointer text-xs"
+                    >
+                      Delete Report
+                    </button>
+                  </div>
+                )}
+
+                {selectedWorkflow && (
+                  <div className="text-sm">
+                    {selectedWorkflow.currentStep === "WAITING_FOR_CLAIM" && (
+                      <div>
+                        {view.item.type === "Found" ? (
+                          creatorId === currentUserId ? (
+                            <p className="text-xs text-slate-500">Waiting for a claim to be submitted by the owner.</p>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                const itemId = view.item._id || view.item.id || "";
+                                window.location.hash = `#/item/${itemId}/claim`;
+                              }}
+                              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition-all cursor-pointer text-xs"
+                            >
+                              Claim This Item
+                            </button>
+                          )
+                        ) : (
+                          creatorId === currentUserId ? (
+                            <p className="text-xs text-slate-500">Waiting for a finder to report that they found this item.</p>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                const itemId = view.item._id || view.item.id || "";
+                                window.location.hash = `#/item/${itemId}/found`;
+                              }}
+                              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded transition-all cursor-pointer text-xs"
+                            >
+                              I Found This
+                            </button>
+                          )
+                        )}
+                      </div>
+                    )}
+
+                    {selectedWorkflow.currentStep === "WAITING_FOR_VERIFICATION" && (
+                      <div className="space-y-6">
+                        {isFinder ? (
+                          <div className="space-y-4">
+                            <h4 className="font-bold text-sm text-slate-800">Pending Claims ({selectedWorkflow.claims?.length || 0})</h4>
+                            {selectedWorkflow.claims && selectedWorkflow.claims.length > 0 ? (
+                              selectedWorkflow.claims.map((claim: any) => (
+                                <div key={claim.claimantId} className="bg-slate-50 p-4 rounded-lg text-xs space-y-2 border">
+                                  <div className="flex justify-between items-center border-b pb-2 mb-2">
+                                    <span className="font-bold text-slate-700">Claimant: {claim.claimantName}</span>
+                                    <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">Pending</span>
+                                  </div>
+                                  <p><strong>Contact Info:</strong> {claim.contactInfo}</p>
+                                  <p><strong>Reason:</strong> {claim.reason}</p>
+                                  <p className="p-2 bg-white rounded border border-dashed">
+                                    <strong>Private Verification Notes:</strong> {claim.privateVerification}
+                                  </p>
+                                  <button
+                                    onClick={() => handleApprove(view.item._id || view.item.id || "", claim.claimantId)}
+                                    className="mt-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded transition-all cursor-pointer text-[10px]"
+                                  >
+                                    Approve This Claim
+                                  </button>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-xs text-slate-500">No claims submitted yet.</p>
+                            )}
+                          </div>
+                        ) : hasPendingClaim ? (
+                          <p className="text-xs text-slate-500">Your claim has been submitted. Waiting for the finder to verify details.</p>
+                        ) : (
+                          <p className="text-xs text-slate-500">This item is pending claim verification.</p>
+                        )}
+                      </div>
+                    )}
+
+                    {selectedWorkflow.currentStep === "WAITING_FOR_HANDOVER" && (
+                      <div>
+                        {isFinder ? (
+                          <button
+                            onClick={() => handleHandover(view.item._id || view.item.id || "")}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition-all cursor-pointer text-xs"
+                          >
+                            Mark as Handed Over
+                          </button>
+                        ) : isClaimant ? (
+                          <p className="text-xs text-slate-500">Claim approved! Waiting for the finder to complete handover.</p>
+                        ) : (
+                          <p className="text-xs text-slate-500">Claim approved. Handover in progress.</p>
+                        )}
+                      </div>
+                    )}
+
+                    {selectedWorkflow.currentStep === "WAITING_FOR_RECEIVER_CONFIRMATION" && (
+                      <div>
+                        {isClaimant ? (
+                          <button
+                            onClick={() => handleConfirm(view.item._id || view.item.id || "")}
+                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded transition-all cursor-pointer text-xs"
+                          >
+                            Confirm Received
+                          </button>
+                        ) : isFinder ? (
+                          <p className="text-xs text-slate-500">Item handed over. Waiting for claimant to confirm receipt.</p>
+                        ) : (
+                          <p className="text-xs text-slate-500">Handover done. Waiting for claimant to confirm receipt.</p>
+                        )}
+                      </div>
+                    )}
+
+                    {selectedWorkflow.currentStep === "COMPLETED" && (
+                      <p className="text-xs font-semibold text-emerald-600 bg-emerald-50 p-3 rounded-lg border border-emerald-100">
+                        Workflow Completed! The item has been returned to its owner.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="md:col-span-4">
+              <WorkflowTimeline 
+                currentStep={selectedWorkflow?.currentStep || "WAITING_FOR_CLAIM"} 
+                history={selectedWorkflow?.history || []}
+              />
+            </div>
+          </div>
         </div>
       ) : (
         <>
@@ -362,36 +622,6 @@ function App() {
                 ))}
               </div>
             </div>
-
-            <div className="flex gap-4 justify-center items-center mt-6">
-              <button
-                onClick={() => setView({ type: "incoming-claims" })}
-                className={`px-4 py-2 rounded-lg border text-sm font-semibold cursor-pointer ${
-                  isDark ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-slate-200 text-slate-900"
-                }`}
-              >
-                📥 Claims on My Items
-                {pendingIncomingCount > 0 && (
-                  <span className="ml-2 px-1.5 py-0.5 rounded-full bg-red-500 text-[10px] text-white">
-                    {pendingIncomingCount}
-                  </span>
-                )}
-              </button>
-
-              <button
-                onClick={() => setView({ type: "outgoing-claims" })}
-                className={`px-4 py-2 rounded-lg border text-sm font-semibold cursor-pointer ${
-                  isDark ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-slate-200 text-slate-900"
-                }`}
-              >
-                📋 My Claims Status
-                {outgoingClaims.length > 0 && (
-                  <span className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 text-[10px]">
-                    {outgoingClaims.length}
-                  </span>
-                )}
-              </button>
-            </div>
           </header>
 
           <main className="flex-1 max-w-7xl w-full mx-auto px-6 pb-20">
@@ -399,11 +629,19 @@ function App() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredItems.map((item) => (
                   <ItemCard 
-                    key={item.id} 
+                    key={item._id || item.id} 
                     item={item} 
                     theme={theme} 
-                    onClaimClick={() => setView({ type: "claim", item })}
-                    onFoundClick={() => setView({ type: "found", item })}
+                    currentUser={currentUser}
+                    onClaimClick={() => {
+                      const itemId = item._id || item.id || "";
+                      window.location.hash = `#/item/${itemId}/claim`;
+                    }}
+                    onFoundClick={() => {
+                      const itemId = item._id || item.id || "";
+                      window.location.hash = `#/item/${itemId}/found`;
+                    }}
+                    onCardClick={() => handleCardClick(item)}
                   />
                 ))}
               </div>
@@ -435,6 +673,16 @@ function App() {
         onAdd={handleAddItem}
         theme={theme}
       />
+
+      {view.type === "detail" && (
+        <EditItemModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onEdit={handleEditItem}
+          item={view.item}
+          theme={theme}
+        />
+      )}
     </div>
   );
 }

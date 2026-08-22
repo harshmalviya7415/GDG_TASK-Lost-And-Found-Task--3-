@@ -1,4 +1,4 @@
-interface Buttonprop {
+interface ButtonProps {
   name: string;
   theme?: string;
   textColor?: string;
@@ -6,6 +6,7 @@ interface Buttonprop {
   height?: number;
   padding?: number;
   onClick?: () => void;
+  disabled?: boolean;
 }
 
 const Button = ({
@@ -16,17 +17,25 @@ const Button = ({
   height,
   theme,
   onClick,
-}: Buttonprop) => {
+  disabled,
+}: ButtonProps) => {
   const isDark = theme === "dark";
 
-  const backgroundColor = isDark ? "#2762E9" : "#f8fafc";
+  const backgroundColor = disabled
+    ? (isDark ? "#334155" : "#f1f5f9")
+    : (isDark ? "#2762E9" : "#f8fafc");
 
-  const finalTextColor = textColor || (isDark ? "#ffffff" : "#0f172a");
+  const finalTextColor = disabled
+    ? (isDark ? "#64748b" : "#94a3b8")
+    : (textColor || (isDark ? "#ffffff" : "#0f172a"));
 
   return (
     <button
-      onClick={onClick}
-      className="inline-flex items-center justify-center font-medium rounded-lg border transition-all duration-300 hover:-translate-y-0.5 cursor-pointer"
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      className={`inline-flex items-center justify-center font-medium rounded-lg border transition-all duration-300 ${
+        disabled ? "cursor-not-allowed opacity-75" : "hover:-translate-y-0.5 cursor-pointer"
+      }`}
       style={{
         backgroundColor,
         border: 0,

@@ -54,7 +54,7 @@ const ReportFoundForm = ({ item, onBack, onSubmitReport, theme }: ReportFoundFor
           </p>
           <button
             onClick={onBack}
-            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer"
+            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-all cursor-pointer"
           >
             Back to Home
           </button>
