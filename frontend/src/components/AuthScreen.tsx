@@ -47,10 +47,11 @@ const AuthScreen = ({ onAuthSuccess }: AuthScreenProps) => {
         }
       }
     } catch (err: any) {
+      console.error("Authentication Error:", err);
       let errMsg = "Something went wrong. Please try again.";
       if (err.response) {
         if (typeof err.response.data === "string" && err.response.data.includes("<html")) {
-          errMsg = `Server Error (${err.response.status}): ${err.response.statusText || "HTML Response"}`;
+          console.error("HTML Server Error:", err.response.data);
         } else if (err.response.data) {
           errMsg = err.response.data.error || err.response.data.message || err.response.data.mess || JSON.stringify(err.response.data);
         } else {
