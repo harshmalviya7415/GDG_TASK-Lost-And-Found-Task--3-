@@ -14,7 +14,7 @@ import { Search, Info, Plus } from "lucide-react";
 axios.defaults.withCredentials = true;
 
 const API = axios.create({
-  baseURL: "http://localhost:1500/api",
+  baseURL: `${import.meta.env.VITE_API_URL || "http://localhost:1500"}/api`,
 });
 
 type ViewState =

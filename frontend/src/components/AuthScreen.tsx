@@ -21,9 +21,11 @@ const AuthScreen = ({ onAuthSuccess }: AuthScreenProps) => {
     setError("");
     setLoading(true);
 
+    const apiBaseUrl = `${import.meta.env.VITE_API_URL || "http://localhost:1500"}/api`;
+
     try {
       if (isLogin) {
-        const res = await axios.post("http://localhost:1500/api/auth/login", {
+        const res = await axios.post(`${apiBaseUrl}/auth/login`, {
           username: email || username,
           password,
         });
@@ -33,7 +35,7 @@ const AuthScreen = ({ onAuthSuccess }: AuthScreenProps) => {
           onAuthSuccess(res.data.token, res.data.user);
         }
       } else {
-        const res = await axios.post("http://localhost:1500/api/auth/register", {
+        const res = await axios.post(`${apiBaseUrl}/auth/register`, {
           username,
           email,
           password,

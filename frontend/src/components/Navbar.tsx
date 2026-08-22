@@ -3,7 +3,7 @@ import Button from "./Button";
 import { Bell, LogOut } from "lucide-react";
 import NotificationsDropdown from "./NotificationsDropdown";
 
-interface Navbarprop {
+interface NavbarProps {
   brandName: string;
   links: Array<{ label: string; href: string }>;
   theme?: string;
@@ -35,7 +35,7 @@ const Navbar = ({
   onMarkRead = () => {},
   onMarkAllRead = () => {},
   onLogout = () => {},
-}: Navbarprop) => {
+}: NavbarProps) => {
   const isDark = theme === "dark";
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -103,7 +103,6 @@ const Navbar = ({
               onClick={onAddClick}
             />
 
-            {/* Notifications Bell */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsNotifOpen(!isNotifOpen)}
@@ -127,7 +126,6 @@ const Navbar = ({
               />
             </div>
 
-            {/* User Profile / Logout */}
             <div className="flex items-center gap-3 pl-2 border-l border-slate-200 dark:border-slate-800">
               <div className="flex flex-col items-end text-xs">
                 <span className="font-bold text-slate-800 dark:text-slate-100">{currentUser.username}</span>
