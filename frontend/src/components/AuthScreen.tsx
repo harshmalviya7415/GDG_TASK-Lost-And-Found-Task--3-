@@ -21,7 +21,7 @@ const AuthScreen = ({ onAuthSuccess }: AuthScreenProps) => {
     setError("");
     setLoading(true);
 
-    const apiBaseUrl = `${import.meta.env.VITE_API_URL || "http://localhost:1500"}/api`;
+    const apiBaseUrl = `${import.meta.env.VITE_API_URL || "http://127.0.0.1:1500"}/api`;
 
     try {
       if (isLogin) {

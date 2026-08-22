@@ -12,7 +12,11 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: ["http://localhost:5174", "http://localhost:5173"],
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://gdg-task-lost-and-found-task-3.vercel.app"
+  ],
   credentials: true
 }));
 app.use(express.json());
@@ -29,6 +33,6 @@ app.get("/", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 1500;
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server Started at ${PORT}`);
 });
