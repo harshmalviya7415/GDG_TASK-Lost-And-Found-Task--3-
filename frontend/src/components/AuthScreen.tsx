@@ -47,7 +47,8 @@ const AuthScreen = ({ onAuthSuccess }: AuthScreenProps) => {
         }
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || "Something went wrong. Please try again.");
+      const detailedErrorMessage = err.response?.data?.error || err.response?.data?.message || err.message || "Something went wrong. Please try again.";
+      setError(detailedErrorMessage);
     } finally {
       setLoading(false);
     }
