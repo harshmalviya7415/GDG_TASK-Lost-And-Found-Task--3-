@@ -47,8 +47,21 @@ const AuthScreen = ({ onAuthSuccess }: AuthScreenProps) => {
         }
       }
     } catch (err: any) {
-      const detailedErrorMessage = err.response?.data?.error || err.response?.data?.message || err.message || "Something went wrong. Please try again.";
-      setError(detailedErrorMessage);
+      let errMsg = "Something went wrong. Please try again.";
+      if (err.response) {
+        if (typeof err.response.data === "string" && err.response.data.includes("<html")) {
+          errMsg = `Server Error (${err.response.status}): ${err.response.statusText || "HTML Response"}`;
+        } else if (err.response.data) {
+          errMsg = err.response.data.error || err.response.data.message || err.response.data.mess || JSON.stringify(err.response.data);
+        } else {
+          errMsg = `Error (${err.response.status}): ${err.response.statusText}`;
+        }
+      } else if (err.message) {
+        errMsg = err.message;
+      } else if (err.toString) {
+        errMsg = err.toString();
+      }
+      setError(errMsg);
     } finally {
       setLoading(false);
     }
