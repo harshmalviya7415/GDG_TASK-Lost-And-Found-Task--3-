@@ -39,6 +39,27 @@ graph TD
 
 ---
 
+## System Walkthrough & Demo Guide
+
+Foundly's interface is divided into several main interaction states, guiding the user dynamically based on authentication and active claims:
+
+### 1. Authentication View (Access Portal)
+* **Login & Sign Up**: Clean interface where users can sign in using their username/email or register a new campus account to manage their reports.
+
+### 2. Main Dashboard (Item List)
+* **Status Panels**: Quick-filter buttons to switch between **All Items**, **Lost Listings**, and **Found Listings**.
+* **Item Search**: Dynamic text search updating matching cards in real-time.
+* **Item Cards**: Displays tag category, date, location details, reporter info, and the current interactive workflow step of the item.
+
+### 3. Claim Form View (Ownership Proof)
+* **Form Submission**: Renders a details form requesting physical parameters like proof of ownership, contact details, and loss date to claim an item back.
+
+### 4. Verification Timeline & Controls (Interaction Detail)
+* **Timeline Visualization**: Interactive timeline component detailing completed steps (e.g. `REPORTED -> CLAIM_SUBMITTED -> APPROVED -> HANDED_OVER -> COMPLETED`).
+* **Creator Panel**: Allows reporters to review claims and approve the correct owner. Allows claimants to track status updates.
+
+---
+
 ## How to Run Locally
 
 ### Prerequisites
