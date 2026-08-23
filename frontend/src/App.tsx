@@ -37,6 +37,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [authLoading, setAuthLoading] = useState(true);
+  const [screenLoading, setScreenLoading] = useState(false);
 
   const checkAuth = async () => {
     try {
@@ -95,6 +96,8 @@ function App() {
         const itemId = parts[0];
         const subAction = parts[1];
 
+        setScreenLoading(true);
+        await new Promise((resolve) => setTimeout(resolve, 350));
         try {
           const itemRes = await API.get(`/items/${itemId}`);
           const workflowRes = await API.get(`/workflows/${itemId}`);
@@ -120,11 +123,13 @@ function App() {
         } catch (err) {
           console.error(err);
           window.location.hash = "";
+        } finally {
+          setScreenLoading(false);
         }
-      } else if (hash === "#about") {
+      } else if (hash === "#/lost" || hash === "#about") {
         setFilter("Lost");
         setView({ type: "list" });
-      } else if (hash === "#features") {
+      } else if (hash === "#/found" || hash === "#features") {
         setFilter("Found");
         setView({ type: "list" });
       } else {
@@ -137,7 +142,7 @@ function App() {
     handleHashChange();
 
     return () => window.removeEventListener("hashchange", handleHashChange);
-  }, []);
+  }, [currentUser]);
 
   const handleCardClick = (item: Item) => {
     const itemId = item._id || item.id || "";
@@ -349,8 +354,8 @@ function App() {
   const heroTextColor = "text-slate-600";
 
   const navLinks = [
-    { label: "Lost", href: "#about" },
-    { label: "Found", href: "#features" },
+    { label: "Lost", href: "#/lost" },
+    { label: "Found", href: "#/found" },
   ];
 
   const creatorId = view.type === "detail" ? (view.item.createdBy?._id || view.item.createdBy) : null;
@@ -390,7 +395,11 @@ function App() {
         }}
       />
 
-      {view.type === "claim" ? (
+      {screenLoading ? (
+        <div className="flex-1 flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        </div>
+      ) : view.type === "claim" ? (
         <div className="flex-1">
           <ClaimItemForm
             item={view.item}
