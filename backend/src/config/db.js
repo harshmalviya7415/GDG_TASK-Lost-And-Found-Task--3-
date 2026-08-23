@@ -2,20 +2,31 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
 
-let isConnected = false;
+let cachedConnection = null;
 
 const connectDb = async () => {
-    if (isConnected) {
-        return;
+    if (mongoose.connection.readyState === 1) {
+        return mongoose.connection;
     }
-    try {
-        const connect = await mongoose.connect(process.env.MONGO_URI);
-        isConnected = !!connect.connections[0].readyState;
-        console.log("Server Connected:::::");
-    } catch (error) {
-        console.log("MONGO_URI:", process.env.MONGO_URI);
-        console.log(`Have Some Error ${error}`);
+
+    if (cachedConnection) {
+        return cachedConnection;
     }
+
+    console.log("Connecting to MongoDB...");
+    cachedConnection = mongoose.connect(process.env.MONGO_URI)
+        .then((conn) => {
+            console.log("Server Connected:::::");
+            return conn;
+        })
+        .catch((error) => {
+            cachedConnection = null;
+            console.error("MONGO_URI:", process.env.MONGO_URI);
+            console.error(`Have Some Error ${error}`);
+            throw error;
+        });
+
+    return cachedConnection;
 };
 
 module.exports = connectDb;
