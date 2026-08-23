@@ -22,10 +22,10 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Pre-connect database on startup
+
 connectDb().catch((err) => console.error("Initial database connection error:", err.message));
 
-// Middleware to ensure database connection is ready for requests
+
 app.use(async (req, res, next) => {
   try {
     await connectDb();

@@ -32,7 +32,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [view, setView] = useState<ViewState>({ type: "list" });
-  
+
   const [selectedWorkflow, setSelectedWorkflow] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -104,8 +104,8 @@ function App() {
             const currentUserId = currentUser?.id || currentUser?._id;
             const claimantIds = workflowRes.data?.claims?.map((c: any) => (c.claimantId?._id || c.claimantId)?.toString()) || [];
             const hasUserClaimed = currentUserId && claimantIds.includes(currentUserId.toString());
-            
-            const isFinalized = workflowRes.data && 
+
+            const isFinalized = workflowRes.data &&
               ["WAITING_FOR_HANDOVER", "WAITING_FOR_RECEIVER_CONFIRMATION", "COMPLETED"].includes(workflowRes.data.currentStep);
 
             if (isFinalized || hasUserClaimed) {
@@ -175,7 +175,7 @@ function App() {
       console.log("[API] Item edited successfully. Message:", res.data.mess);
       setIsEditModalOpen(false);
       await fetchItems();
-      
+
       if (view.type === "detail" && (view.item._id === id || view.item.id === id)) {
         setView({ type: "detail", item: { ...view.item, ...updatedItem } });
       }
@@ -372,10 +372,10 @@ function App() {
 
   return (
     <div className={`min-h-screen ${bgClass} transition-all duration-300 flex flex-col font-sans`}>
-      <Navbar 
-        brandName="Foundly" 
-        links={navLinks} 
-        theme={theme} 
+      <Navbar
+        brandName="Foundly"
+        links={navLinks}
+        theme={theme}
         currentUser={currentUser}
         notifications={notifications}
         onMarkRead={handleMarkRead}
@@ -434,7 +434,7 @@ function App() {
                 </div>
                 <h2 className="text-3xl font-bold mb-4">{view.item.title}</h2>
                 <p className="text-slate-600 text-sm mb-6 whitespace-pre-wrap">{view.item.description}</p>
-                
+
                 <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-lg">
                   <p><strong>Location:</strong> {view.item.location}</p>
                   <p><strong>Date:</strong> {view.item.date}</p>
@@ -585,8 +585,8 @@ function App() {
             </div>
 
             <div className="md:col-span-4">
-              <WorkflowTimeline 
-                currentStep={selectedWorkflow?.currentStep || "WAITING_FOR_CLAIM"} 
+              <WorkflowTimeline
+                currentStep={selectedWorkflow?.currentStep || "WAITING_FOR_CLAIM"}
                 history={selectedWorkflow?.history || []}
               />
             </div>
@@ -605,12 +605,12 @@ function App() {
               A centralized campus platform to report lost items, browse found belongings, and claim your items back.
             </p>
 
-            <div className="flex flex-col md:flex-row gap-4 justify-between items-center max-w-2xl mx-auto w-full p-2 rounded-2xl border backdrop-blur-md" 
-                 style={{ 
-                   backgroundColor: isDark ? "rgba(30, 41, 59, 0.4)" : "rgba(255, 255, 255, 0.8)", 
-                   borderColor: isDark ? "#334155" : "#e2e8f0" 
+            <div className="flex flex-col md:flex-row gap-4 justify-between items-center max-w-2xl mx-auto w-full p-2 rounded-2xl border backdrop-blur-md"
+                 style={{
+                   backgroundColor: isDark ? "rgba(30, 41, 59, 0.4)" : "rgba(255, 255, 255, 0.8)",
+                   borderColor: isDark ? "#334155" : "#e2e8f0"
                  }}>
-              
+
               <div className="flex items-center gap-2 px-3 py-2 w-full md:w-auto flex-1 rounded-xl"
                    style={{ backgroundColor: isDark ? "#0f172a" : "#f1f5f9" }}>
                 <Search className="text-blue-500 shrink-0" size={18} />
@@ -651,10 +651,10 @@ function App() {
             {filteredItems.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredItems.map((item) => (
-                  <ItemCard 
-                    key={item._id || item.id} 
-                    item={item} 
-                    theme={theme} 
+                  <ItemCard
+                    key={item._id || item.id}
+                    item={item}
+                    theme={theme}
                     currentUser={currentUser}
                     onClaimClick={() => {
                       const itemId = item._id || item.id || "";

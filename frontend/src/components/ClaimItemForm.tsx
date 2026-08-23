@@ -84,7 +84,7 @@ const ClaimItemForm = ({ item, onBack, onSubmitClaim, theme }: ClaimItemFormProp
           <span className="text-xs uppercase font-bold text-blue-500">Item being claimed</span>
           <h3 className="text-xl font-bold mt-2 mb-1">{item.title}</h3>
           <p className="text-xs opacity-75 mb-4">{item.description}</p>
-          
+
           <div className="border-t pt-4 space-y-2 text-xs opacity-90">
             <p><strong>Found Location:</strong> {item.location}</p>
             <p><strong>Found Date:</strong> {item.date}</p>

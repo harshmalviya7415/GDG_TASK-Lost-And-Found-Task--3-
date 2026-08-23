@@ -75,12 +75,12 @@ const ReportFoundForm = ({ item, onBack, onSubmitReport, theme }: ReportFoundFor
       </button>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-       
+
         <div className={`md:col-span-5 p-5 rounded-xl border ${cardBg} ${borderColor}`}>
           <span className="text-xs uppercase font-bold text-red-500">Lost Item Info</span>
           <h3 className="text-xl font-bold mt-2 mb-1">{item.title}</h3>
           <p className="text-xs opacity-75 mb-4">{item.description}</p>
-          
+
           <div className="border-t pt-4 space-y-2 text-xs opacity-90">
             <p><strong>Last Location:</strong> {item.location}</p>
             <p><strong>Date Lost:</strong> {item.date}</p>
@@ -89,7 +89,7 @@ const ReportFoundForm = ({ item, onBack, onSubmitReport, theme }: ReportFoundFor
           </div>
         </div>
 
-       
+
         <div className={`md:col-span-7 p-6 rounded-xl border ${cardBg} ${borderColor}`}>
           <h2 className="text-xl font-bold mb-4">I Found This</h2>
           <form onSubmit={handleSubmit} className="space-y-4">

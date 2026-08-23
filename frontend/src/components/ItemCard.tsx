@@ -113,11 +113,11 @@ const ItemCard = ({
           const currentUserId = currentUser?.id || currentUser?._id;
           const hasUserClaimed = !!(item.claimantIds && currentUserId && item.claimantIds.includes(currentUserId.toString()));
 
-          const isFinalized = !!(item.currentStep && 
+          const isFinalized = !!(item.currentStep &&
             ["WAITING_FOR_HANDOVER", "WAITING_FOR_RECEIVER_CONFIRMATION", "COMPLETED"].includes(item.currentStep));
-          
+
           const isCompleted = item.currentStep === "COMPLETED";
-          
+
           let buttonName = isLost ? "I Found This" : "Claim Item";
           let isDisabled = false;
 

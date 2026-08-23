@@ -68,7 +68,7 @@ const Navbar = ({
         height: height !== undefined ? `${height}px` : undefined,
       }}
     >
-      <div 
+      <div
         onClick={onBrandClick}
         className="flex items-center gap-2 font-bold tracking-tight text-xl cursor-pointer hover:opacity-80 transition-all shrink-0"
       >
@@ -97,9 +97,9 @@ const Navbar = ({
       <div className="flex items-center gap-4 shrink-0">
         {currentUser ? (
           <>
-            <Button 
-              name="Add Lost Item" 
-              theme={theme === "dark" ? "light" : "dark"} 
+            <Button
+              name="Add Lost Item"
+              theme={theme === "dark" ? "light" : "dark"}
               onClick={onAddClick}
             />
 
