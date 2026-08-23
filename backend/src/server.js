@@ -19,6 +19,8 @@ app.use((req, res, next) => {
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
   "https://gdg-task-lost-and-found-task-3.vercel.app"
 ];
 if (process.env.FRONTEND_URL) {
