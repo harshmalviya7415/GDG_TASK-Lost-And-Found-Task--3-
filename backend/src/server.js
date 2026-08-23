@@ -22,7 +22,21 @@ app.use(cors({
 }));
 app.use(express.json());
 
-connectDb();
+// Pre-connect database on startup
+connectDb().catch((err) => console.error("Initial database connection error:", err.message));
+
+// Middleware to ensure database connection is ready for requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDb();
+    next();
+  } catch (error) {
+    res.status(500).json({
+      error: "Database connection failed. If you are hosting on Vercel, make sure that 0.0.0.0/0 (allow all IPs) is whitelisted in your MongoDB Atlas Network Access settings.",
+      details: error.message
+    });
+  }
+});
 
 app.use("/api/items", itemRoutes);
 app.use("/api/workflows", workflowRoutes);

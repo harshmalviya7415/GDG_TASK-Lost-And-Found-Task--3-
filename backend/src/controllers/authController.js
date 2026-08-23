@@ -20,11 +20,12 @@ const register = async (req, res) => {
     await user.save();
 
     const token = await gentoken(user._id);
+    const isProduction = process.env.NODE_ENV === "production" || !!process.env.VERCEL;
     res.cookie("token", token, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      secure: false,
-      sameSite: "Lax",
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
     });
 
     res.status(201).json({ message: "Registration successful", user: { id: user._id, username: user.username } });
@@ -55,11 +56,12 @@ const login = async (req, res) => {
     }
 
     const token = await gentoken(user._id);
+    const isProduction = process.env.NODE_ENV === "production" || !!process.env.VERCEL;
     res.cookie("token", token, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      secure: false,
-      sameSite: "Lax",
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
     });
 
     res.status(200).json({ message: "Login successful", user: { id: user._id, username: user.username } });
@@ -70,7 +72,12 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  res.clearCookie("token");
+  const isProduction = process.env.NODE_ENV === "production" || !!process.env.VERCEL;
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "None" : "Lax",
+  });
   res.status(200).json({ message: "Logout successful" });
 };
 
