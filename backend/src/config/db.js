@@ -16,7 +16,7 @@ const connectDb = async () => {
         return cachedConnection;
     }
 
-    console.log("Connecting to MongoDB...");
+    console.log("Connecting to MongoDB. MONGO_URI in process.env:", process.env.MONGO_URI);
     cachedConnection = mongoose.connect(process.env.MONGO_URI)
         .then((conn) => {
             console.log("Server Connected:::::");
