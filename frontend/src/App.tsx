@@ -97,6 +97,7 @@ function App() {
         const subAction = parts[1];
 
         setScreenLoading(true);
+        await new Promise((resolve) => setTimeout(resolve, 350));
         try {
           const itemRes = await API.get(`/items/${itemId}`);
           const workflowRes = await API.get(`/workflows/${itemId}`);
@@ -208,6 +209,7 @@ function App() {
     lossDate: string;
     itemId: string;
   }) => {
+    setScreenLoading(true);
     try {
       const itemId = claimDetails.itemId;
       console.log("[Workflow] Submitting claim for item ID:", itemId, "Claim details:", claimDetails);
@@ -223,6 +225,8 @@ function App() {
       window.location.hash = `#/item/${itemId}`;
     } catch (err) {
       console.log("[Workflow] Failed to submit claim:", err);
+    } finally {
+      setScreenLoading(false);
     }
   };
 
@@ -234,6 +238,7 @@ function App() {
     additionalNotes: string;
     itemId: string;
   }) => {
+    setScreenLoading(true);
     try {
       const itemId = reportDetails.itemId;
       console.log("[Workflow] Submitting found claim report for item ID:", itemId, "Found details:", reportDetails);
@@ -249,10 +254,13 @@ function App() {
       window.location.hash = `#/item/${itemId}`;
     } catch (err) {
       console.log("[Workflow] Failed to submit found claim report:", err);
+    } finally {
+      setScreenLoading(false);
     }
   };
 
   const handleApprove = async (itemId: string, claimantId: string) => {
+    setScreenLoading(true);
     try {
       console.log("[Workflow] Approving claim for item ID:", itemId, "Claimant User ID:", claimantId);
       const res = await API.post(`/workflows/${itemId}/approve`, { claimantId });
@@ -261,10 +269,13 @@ function App() {
       await fetchItems();
     } catch (err) {
       console.log("[Workflow] Failed to approve claim:", err);
+    } finally {
+      setScreenLoading(false);
     }
   };
 
   const handleHandover = async (itemId: string) => {
+    setScreenLoading(true);
     try {
       console.log("[Workflow] Marking item ID as handed over:", itemId);
       const res = await API.post(`/workflows/${itemId}/handover`);
@@ -273,10 +284,13 @@ function App() {
       await fetchItems();
     } catch (err) {
       console.log("[Workflow] Failed to mark handover:", err);
+    } finally {
+      setScreenLoading(false);
     }
   };
 
   const handleConfirm = async (itemId: string) => {
+    setScreenLoading(true);
     try {
       console.log("[Workflow] Confirming receipt of item ID:", itemId);
       const res = await API.post(`/workflows/${itemId}/confirm`);
@@ -285,6 +299,8 @@ function App() {
       await fetchItems();
     } catch (err) {
       console.log("[Workflow] Failed to confirm receipt:", err);
+    } finally {
+      setScreenLoading(false);
     }
   };
 
