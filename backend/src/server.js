@@ -16,12 +16,17 @@ app.use((req, res, next) => {
   next();
 });
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://gdg-task-lost-and-found-task-3.vercel.app"
+];
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "https://gdg-task-lost-and-found-task-3.vercel.app"
-  ],
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(express.json());
