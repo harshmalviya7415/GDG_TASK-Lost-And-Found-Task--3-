@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
 
+// Disable buffering commands globally so queries fail fast when connection is not established
+mongoose.set("bufferCommands", false);
+
 let cachedConnection = null;
 
 const connectDb = async () => {
