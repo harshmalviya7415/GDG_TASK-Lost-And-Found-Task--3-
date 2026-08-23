@@ -37,7 +37,6 @@ function App() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [authLoading, setAuthLoading] = useState(true);
-  const [screenLoading, setScreenLoading] = useState(false);
 
   const checkAuth = async () => {
     try {
@@ -96,8 +95,6 @@ function App() {
         const itemId = parts[0];
         const subAction = parts[1];
 
-        setScreenLoading(true);
-        await new Promise((resolve) => setTimeout(resolve, 350));
         try {
           const itemRes = await API.get(`/items/${itemId}`);
           const workflowRes = await API.get(`/workflows/${itemId}`);
@@ -123,8 +120,6 @@ function App() {
         } catch (err) {
           console.error(err);
           window.location.hash = "";
-        } finally {
-          setScreenLoading(false);
         }
       } else if (hash === "#about") {
         setFilter("Lost");
@@ -142,7 +137,7 @@ function App() {
     handleHashChange();
 
     return () => window.removeEventListener("hashchange", handleHashChange);
-  }, [currentUser]);
+  }, []);
 
   const handleCardClick = (item: Item) => {
     const itemId = item._id || item.id || "";
@@ -209,7 +204,6 @@ function App() {
     lossDate: string;
     itemId: string;
   }) => {
-    setScreenLoading(true);
     try {
       const itemId = claimDetails.itemId;
       console.log("[Workflow] Submitting claim for item ID:", itemId, "Claim details:", claimDetails);
@@ -225,8 +219,6 @@ function App() {
       window.location.hash = `#/item/${itemId}`;
     } catch (err) {
       console.log("[Workflow] Failed to submit claim:", err);
-    } finally {
-      setScreenLoading(false);
     }
   };
 
@@ -238,7 +230,6 @@ function App() {
     additionalNotes: string;
     itemId: string;
   }) => {
-    setScreenLoading(true);
     try {
       const itemId = reportDetails.itemId;
       console.log("[Workflow] Submitting found claim report for item ID:", itemId, "Found details:", reportDetails);
@@ -254,13 +245,10 @@ function App() {
       window.location.hash = `#/item/${itemId}`;
     } catch (err) {
       console.log("[Workflow] Failed to submit found claim report:", err);
-    } finally {
-      setScreenLoading(false);
     }
   };
 
   const handleApprove = async (itemId: string, claimantId: string) => {
-    setScreenLoading(true);
     try {
       console.log("[Workflow] Approving claim for item ID:", itemId, "Claimant User ID:", claimantId);
       const res = await API.post(`/workflows/${itemId}/approve`, { claimantId });
@@ -269,13 +257,10 @@ function App() {
       await fetchItems();
     } catch (err) {
       console.log("[Workflow] Failed to approve claim:", err);
-    } finally {
-      setScreenLoading(false);
     }
   };
 
   const handleHandover = async (itemId: string) => {
-    setScreenLoading(true);
     try {
       console.log("[Workflow] Marking item ID as handed over:", itemId);
       const res = await API.post(`/workflows/${itemId}/handover`);
@@ -284,13 +269,10 @@ function App() {
       await fetchItems();
     } catch (err) {
       console.log("[Workflow] Failed to mark handover:", err);
-    } finally {
-      setScreenLoading(false);
     }
   };
 
   const handleConfirm = async (itemId: string) => {
-    setScreenLoading(true);
     try {
       console.log("[Workflow] Confirming receipt of item ID:", itemId);
       const res = await API.post(`/workflows/${itemId}/confirm`);
@@ -299,8 +281,6 @@ function App() {
       await fetchItems();
     } catch (err) {
       console.log("[Workflow] Failed to confirm receipt:", err);
-    } finally {
-      setScreenLoading(false);
     }
   };
 
@@ -410,11 +390,7 @@ function App() {
         }}
       />
 
-      {screenLoading ? (
-        <div className="flex-1 flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
-        </div>
-      ) : view.type === "claim" ? (
+      {view.type === "claim" ? (
         <div className="flex-1">
           <ClaimItemForm
             item={view.item}
@@ -630,13 +606,13 @@ function App() {
             </p>
 
             <div className="flex flex-col md:flex-row gap-4 justify-between items-center max-w-2xl mx-auto w-full p-2 rounded-2xl border backdrop-blur-md"
-                 style={{
-                   backgroundColor: isDark ? "rgba(30, 41, 59, 0.4)" : "rgba(255, 255, 255, 0.8)",
-                   borderColor: isDark ? "#334155" : "#e2e8f0"
-                 }}>
+              style={{
+                backgroundColor: isDark ? "rgba(30, 41, 59, 0.4)" : "rgba(255, 255, 255, 0.8)",
+                borderColor: isDark ? "#334155" : "#e2e8f0"
+              }}>
 
               <div className="flex items-center gap-2 px-3 py-2 w-full md:w-auto flex-1 rounded-xl"
-                   style={{ backgroundColor: isDark ? "#0f172a" : "#f1f5f9" }}>
+                style={{ backgroundColor: isDark ? "#0f172a" : "#f1f5f9" }}>
                 <Search className="text-blue-500 shrink-0" size={18} />
                 <input
                   type="text"
