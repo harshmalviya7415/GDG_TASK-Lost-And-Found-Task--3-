@@ -39,10 +39,12 @@ function App() {
 
   const checkAuth = async () => {
     try {
+      console.log("[Auth] Checking user authentication state...");
       const res = await API.get("/auth/me");
+      console.log("[Auth] Authentication check succeeded. User:", res.data);
       setCurrentUser(res.data);
     } catch (err) {
-      console.error(err);
+      console.log("[Auth] User is not authenticated.", err);
       setCurrentUser(null);
     } finally {
       setAuthLoading(false);
@@ -51,19 +53,23 @@ function App() {
 
   const fetchItems = async () => {
     try {
+      console.log("[API] Fetching all items from database...");
       const res = await API.get("/items");
+      console.log("[API] Items loaded successfully. Count:", res.data.length);
       setItems(res.data);
     } catch (err) {
-      console.error(err);
+      console.log("[API] Failed to fetch items:", err);
     }
   };
 
   const fetchNotifications = async () => {
     try {
+      console.log("[API] Fetching notifications...");
       const res = await API.get("/notifications");
+      console.log("[API] Notifications loaded successfully. Count:", res.data.length);
       setNotifications(res.data);
     } catch (err) {
-      console.error(err);
+      console.log("[API] Failed to fetch notifications:", err);
     }
   };
 
@@ -139,19 +145,22 @@ function App() {
 
   const handleAddItem = async (newItem: Omit<Item, "id">) => {
     try {
+      console.log("[API] Submitting new reported item:", newItem);
       const res = await API.post("/items", newItem);
+      console.log("[API] Item reported successfully:", res.data);
       setIsModalOpen(false);
       await fetchItems();
       const createdItemId = res.data.item._id || res.data.item.id;
       window.location.hash = `#/item/${createdItemId}`;
     } catch (err) {
-      console.error(err);
+      console.log("[API] Failed to submit reported item:", err);
     }
   };
 
   const handleEditItem = async (updatedItem: Item) => {
     try {
       const id = updatedItem._id || updatedItem.id;
+      console.log("[API] Editing item ID:", id, "New Details:", updatedItem);
       const res = await API.post("/items/edit", {
         id,
         title: updatedItem.title,
@@ -162,28 +171,28 @@ function App() {
         date: updatedItem.date,
         contact: updatedItem.contact,
       });
+      console.log("[API] Item edited successfully. Message:", res.data.mess);
       setIsEditModalOpen(false);
       await fetchItems();
       
       if (view.type === "detail" && (view.item._id === id || view.item.id === id)) {
         setView({ type: "detail", item: { ...view.item, ...updatedItem } });
       }
-      
-      console.log(res.data.mess);
     } catch (err) {
-      console.error(err);
+      console.log("[API] Failed to edit item:", err);
     }
   };
 
   const handleDeleteItem = async (itemId: string) => {
     try {
+      console.log("[API] Deleting item ID:", itemId);
       const res = await API.post("/items/delete", { id: itemId });
-      console.log(res.data.mess);
+      console.log("[API] Item deleted successfully. Message:", res.data.mess);
       await fetchItems();
       window.location.hash = "";
       setView({ type: "list" });
     } catch (err) {
-      console.error(err);
+      console.log("[API] Failed to delete item:", err);
     }
   };
 
@@ -196,17 +205,19 @@ function App() {
   }) => {
     try {
       const itemId = claimDetails.itemId;
+      console.log("[Workflow] Submitting claim for item ID:", itemId, "Claim details:", claimDetails);
       const res = await API.post(`/workflows/${itemId}/claim`, {
         claimantName: claimDetails.claimantName,
         contactInfo: claimDetails.contactInfo,
         reason: claimDetails.proofOfOwnership,
         privateVerification: claimDetails.proofOfOwnership,
       });
+      console.log("[Workflow] Claim submitted successfully. Updated workflow:", res.data);
       setSelectedWorkflow(res.data);
       await fetchItems();
       window.location.hash = `#/item/${itemId}`;
     } catch (err) {
-      console.error(err);
+      console.log("[Workflow] Failed to submit claim:", err);
     }
   };
 
@@ -220,73 +231,84 @@ function App() {
   }) => {
     try {
       const itemId = reportDetails.itemId;
+      console.log("[Workflow] Submitting found claim report for item ID:", itemId, "Found details:", reportDetails);
       const res = await API.post(`/workflows/${itemId}/claim`, {
         claimantName: reportDetails.finderName,
         contactInfo: reportDetails.contactInfo,
         reason: `Found at ${reportDetails.foundLocation}`,
         privateVerification: reportDetails.additionalNotes,
       });
+      console.log("[Workflow] Found claim report submitted. Updated workflow:", res.data);
       setSelectedWorkflow(res.data);
       await fetchItems();
       window.location.hash = `#/item/${itemId}`;
     } catch (err) {
-      console.error(err);
+      console.log("[Workflow] Failed to submit found claim report:", err);
     }
   };
 
   const handleApprove = async (itemId: string, claimantId: string) => {
     try {
+      console.log("[Workflow] Approving claim for item ID:", itemId, "Claimant User ID:", claimantId);
       const res = await API.post(`/workflows/${itemId}/approve`, { claimantId });
+      console.log("[Workflow] Claim approved successfully. Updated workflow:", res.data);
       setSelectedWorkflow(res.data);
       await fetchItems();
     } catch (err) {
-      console.error(err);
+      console.log("[Workflow] Failed to approve claim:", err);
     }
   };
 
   const handleHandover = async (itemId: string) => {
     try {
+      console.log("[Workflow] Marking item ID as handed over:", itemId);
       const res = await API.post(`/workflows/${itemId}/handover`);
+      console.log("[Workflow] Item marked handed over. Updated workflow:", res.data);
       setSelectedWorkflow(res.data);
       await fetchItems();
     } catch (err) {
-      console.error(err);
+      console.log("[Workflow] Failed to mark handover:", err);
     }
   };
 
   const handleConfirm = async (itemId: string) => {
     try {
+      console.log("[Workflow] Confirming receipt of item ID:", itemId);
       const res = await API.post(`/workflows/${itemId}/confirm`);
+      console.log("[Workflow] Item receipt confirmed. Updated workflow:", res.data);
       setSelectedWorkflow(res.data);
       await fetchItems();
     } catch (err) {
-      console.error(err);
+      console.log("[Workflow] Failed to confirm receipt:", err);
     }
   };
 
   const handleMarkRead = async (id: string) => {
     try {
+      console.log("[Notification] Marking notification as read, ID:", id);
       await API.put(`/notifications/${id}/read`);
       fetchNotifications();
     } catch (err) {
-      console.error(err);
+      console.log("[Notification] Failed to mark notification as read:", err);
     }
   };
 
   const handleMarkAllRead = async () => {
     try {
+      console.log("[Notification] Marking all notifications as read");
       await API.put("/notifications/mark-all-read");
       fetchNotifications();
     } catch (err) {
-      console.error(err);
+      console.log("[Notification] Failed to mark all notifications read:", err);
     }
   };
 
   const handleLogout = async () => {
     try {
+      console.log("[Auth] Logging user out...");
       await API.post("/auth/logout");
     } catch (err) {
-      console.error(err);
+      console.log("[Auth] Logout request error:", err);
     }
     setCurrentUser(null);
     setNotifications([]);
