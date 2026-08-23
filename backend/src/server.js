@@ -16,38 +16,18 @@ app.use((req, res, next) => {
   next();
 });
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "http://127.0.0.1:5173",
-  "http://127.0.0.1:5174",
-  "https://gdg-task-lost-and-found-task-3.vercel.app"
-];
-if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
-}
-
 app.use(cors({
-  origin: allowedOrigins,
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174"
+  ],
   credentials: true
 }));
 app.use(express.json());
 
-// Pre-connect database on startup
-connectDb().catch((err) => console.error("Initial database connection error:", err.message));
-
-// Middleware to ensure database connection is ready
-app.use(async (req, res, next) => {
-  try {
-    await connectDb();
-    next();
-  } catch (error) {
-    res.status(500).json({
-      error: "Database connection failed. If you are hosting on Vercel, make sure that 0.0.0.0/0 (allow all IPs) is whitelisted in your MongoDB Atlas Network Access settings.",
-      details: error.message
-    });
-  }
-});
+connectDb();
 
 app.use("/api/items", itemRoutes);
 app.use("/api/workflows", workflowRoutes);
